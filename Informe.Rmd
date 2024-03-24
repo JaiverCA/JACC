@@ -1,0 +1,343 @@
+---
+title: "Informe UPA Cundinamarca  CNA"
+author: "JAIVER ALBEIRO CARREÑO CUADROS"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+suppressMessages(library(leaflet))
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+```{=html}
+<style>
+  p {
+    text-align: justify;
+  }
+</style>
+```
+## Introducción
+
+El análisis exploratorio de datos del 3er Censo Nacional Agropecuario (CNA) es fundamental para comprender la realidad de la Colombia rural. Este censo, nos proporciona información estadistica actualizada sobre el campo, convirtiendose en un hito importante que nos permite obtener información detallada sobre las unidades productoras agropecuarias y no agropecuarias en el país. Logrando una cobertura operativa del 98.9%, cubriendo los 1.101 municipios del país, el archipiélago de San Andrés, Providencia y Santa Catalina, 32 departamentos, 20 áreas no municipalizadas, 773 resguardos indígenas, 181 tierras de comunidades negras y 56 parques nacionales naturales. En este informe, nos enfocaremos en el análisis de las Unidades de Produción Agropecuaria (UPA) en el departamento de Cundinamarca.   
+
+[^1]: Ver Geoportal DANE  [Geo-DANE](https://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/censo-nacional-agropecuario-2014) 
+
+El 3er CNA considera, como parte de sus requerimientos, el ser complemento temático en el espacio rural para el próximo Censo de Población y Vivienda. Por esta razón, uno de sus objetivos es cuantificar las viviendas, los hogares y la población residente y establecer sus características sociodemográficas básicas, así como recontar las actividades económicas no agropecuarias. 
+
+[^2]: Ver Metodologia DANE  [Metodologia-DANE](https://www.dane.gov.co/files/investigaciones/fichas/agropecuario/metodologia_CNA-01_V1.pdf) 
+
+## Antecedentes
+
+Antes del 3er CNA, Colombia realizó dos censos especializados en el sector agropecuario en 1960 y 1970 con una cobertura de 16 y 21 departamentos respectivamente, con una cobertura limitada en terminos geográficos y tematicos. pero siendo referentes importantes para comprender la estructura agraria del país. Sin embargo, el 3er CNA se destaca por su enfoque inclusivo y exhaustivo, abarcando tanto actividades productivas agropecuarias como no agropecuarias en áreas rurales dispersas, incluyendo territorios étnicos y parques nacionales.
+
+## Características del Departamento de Cundinamarca
+
+Cundinamarca, ubicado en el centro de Colombia, presenta una geografía diversa que incluye la Cordillera Oriental, el altiplano cundiboyacense y el valle del Magdalena. Con una población total de 3,035,522 habitantes, el departamento cuenta con suelos fértiles y un clima variado propicio para la producción agropecuaria, desempeñando un papel fundamental en la economia agricola de Colombia, albergando 380 Unidades de Producción agropecuaria (UPA) y un total de 321.269 registros para cada una de las variables de interés referenciadas en *la tabla 1* .
+
+```{r, echo= FALSE}
+tabla_homologación <- readRDS("tabla_homologación.rds")
+knitr::kable(
+  tabla_homologación, caption = "Tabla 1 - Tabla Homologación"
+)
+
+```
+
+```{r, include=FALSE}
+library(dplyr)
+suppressMessages(library(knitr))
+suppressMessages(library(ggplot2))
+library(DT)
+suppressMessages(library(dplyr))
+library(tufte)
+suppressMessages(library(sp))
+```
+
+```{r, echo=FALSE}
+datos <- readRDS("datos.rds")
+```
+
+# Durante el 2013, ¿Cual fue el principal fenómeno  
+\par
+ # que afectó los pastos sembrados? (P_S6P71)
+
+Dentro de los fenomenos que afectaron durante el 2013 la producción y calidad de los pastos y forrajes, de las unidades productivas, tenemos inundación, exceso de lluvia, lluvia a destiempo, granizada, helada, sequia, vientos fuertes, deslizamiento de tierra, incendio, plaga, y enfermedad. Se presenta una tabla con la distribución de frecuencias que muestran los fenómenos que afectaron a los pastos sembrados, acompañada de un gráfico de barras que muestra la distribución de dicho fenómeno.
+
+```{r, echo=FALSE}
+tabla_fenomeno <- readRDS("tdf_fenomeno.rds")
+knitr::kable(tabla_fenomeno, caption = "Tabla 2 - Distribución del fenómeno que afecto a los pastos.",
+             format="pipe")
+
+```
+
+```{r, include=FALSE}
+tdf_fenomeno <- readRDS("tdf_fenomeno.rds")
+knitr::kable(tdf_fenomeno, caption = "Tabla 3 - Distribución del número de hembras de ordeño.",
+             format="pipe")
+```
+
+```{r, echo= FALSE, fig-margin, fig.margin = TRUE, fig.cap = "Distribución fenomeno que afecto a pastos sembrados.", fig.width=3.5, fig.height=3.5, cache=TRUE, message=FALSE}
+#Grafico de barras para la variable fenómeno que afecto a pastos sembrados?
+
+tdf_fenomeno %>%
+ filter(ni >= 0L & ni <= 236000L) %>%
+ ggplot() +
+ aes(x = FENOMENOS, y = ni) +
+ geom_col(fill = "#2F065F") +
+ labs(x = "Fenómeno", 
+ y = "Frecuencia", title = "Distribución fenomeno") +
+ coord_flip() +
+ theme_bw()
+```
+
+Basandonos en le grafico de barras y la tabla de distribución de frecuencias Durante el año 2013, uno de los principales fenómenos que afectó los pastos sembrados fue la sequía con un 2.18 %. Fenomeno climático que puede tener un impacto en la disponibilidad de agua para el riego de pastos, factor diferencial para su crecimiento, lo que a su vez afecta la producción agrícola y ganadera en las zonas afectadas. Aunque en menor medida que la sequia, las heladas tambien tienem efectos devastadores en los pastizales.
+
+\par
+
+
+
+# Número de hembras de ganado bovino de ordeño 
+\par
+# dentro de la unidad productora.
+
+El número de hembras de ganado bovino de ordeño dentro de una unidad productiva agropecuaria es un indicador clave para comprender la capacidad de producción láctea en esa unidad. Este número puede variar ampliamente según diversos factores, como el tamaño de la unidad, las prácticas de manejo del ganado, la disponibilidad de recursos alimenticios, entre otros. Por lo tanto, es fundamental monitorear y analizar este dato para optimizar la producción láctea y la gestión del ganado bovino en una explotación agropecuaria.
+
+En la tabla, se muestran los intervalos de número de hembras y las frecuencias correspondientes a cada intervalo.
+
+```{r, echo=FALSE}
+tdf_hembras <- readRDS("tdf_hembras.rds")
+knitr::kable(tdf_hembras, caption = "Tabla 4 - Distribución del número de hembras de ordeño.",
+             format="pipe")
+
+```
+
+
+ Histograma número de hembras dentro de la unidad productiva.
+ 
+```{r, echo= FALSE, Fenomeno, fig.margin = TRUE, fig.cap = "*Distribución número de hembrasganado bovino para ordeño dentro de la unidad productiva.*", fig.width=3.5, fig.height=3.5, cache=TRUE, message=FALSE}
+#HISTOGRAMA NÚMERO DE HEMBRAS 
+tdf_hembras %>%
+ filter(Ni >= 61496L & Ni <= 61690L) %>%
+ filter(xi >= 40L & xi <= 1320L) %>%
+ ggplot() +
+ aes(x = intervalos, y = ni) +
+ geom_col(fill = "#57045F") +
+ labs(x = "Número de hembras", 
+ y = "Frecuencias", title = "Distribución Número de Hembras") +
+ theme_gray() +
+  theme(
+    axis.text.x = element_text(size = 10, angle = 45, hjust = 1),  
+    axis.text.y = element_text(size = 10),  
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),  # Tamaño de etiqueta en eje x
+    axis.title.y = element_text(size = 12)  
+  )
+```
+ 
+
+Se presenta la distribución del número de hembras de ordeño mediante un histograma, agrupando los datos en 19 intervalos.
+
+
+
+El histograma representa visualmente la distribución del número de hembras de ordeño dentro de la unidad productiva (UPA)para el ganado bovino productor de leche. Destacando que alrededor del 99% de las UPAs cuentan con entre 0 y 1000 hembras de ganado bovino como productoras de leche, observación relevante y reveladora sobre la distribución de producción de leche.
+
+```{r, echo=FALSE, Boxplot, fig.margin = TRUE, fig.cap = "*Boxplot número de hembras*", fig.width=3.5, fig.height=3.5, cache=TRUE, message=FALSE}
+#Boxplot 
+boxplot(datos$ P_S7P84F)
+bp <- boxplot(datos$ P_S7P84F) 
+
+
+```
+
+
+El boxplot, es crucial en este análisis ya que visualizamos, como la mayoria de datos  correspondintes al número de hembras , lo que referencia como en un número significativo de UPAs la cantidad de vacas en producción lactea se concentran en un rango muy peuqeño entre 0 y 1 correspondinte al cuartil 1 ($Q_1$) y cuartil 3 ($Q_3$) respectivamente . centrados en una mediana de 2, lo que nos indica que el 50% de los datos se encuentran por encima de 2 y el otro 505 por debajo de 2.  Información que se puede corroborar en la tabla resumen para las medidas de tendencia central 
+
+
+## Tablas resumen 
+
+Medidas de tendencia central y de posición. 
+
+```{r, echo=FALSE}
+tb_resumen_hembras<- readRDS("tb_resumen_hembras.rds")
+knitr::kable(tb_resumen_hembras, 
+             row.name= FALSE)
+```
+
+
+En las unidades productivas agropecuarias del departamento de Cundinamarca, el promedio de hembras de ganado bovino en producción láctea es de 4.6608. La mediana de este conjunto de datos es de 2 hembras, mientras que el valor máximo registrado es de 1720 hembras, podemos ver como la media es un poco más grande que la media, esto es producto de la existencia  UPAs con un gran número de vacas en producción, provocando que el promedio aumente.
+
+
+Medidas de dispersión y variabilidad 
+
+```{r, echo=FALSE}
+tb_resumen2_hembras<- readRDS("tb_resumen2_hembras.rds")
+knitr::kable(tb_resumen2_hembras, 
+             row.name= FALSE)
+
+```
+
+
+La varianza alta de 858.0892 indica una dispersión considerable de los datos en relación con la media. Esta dispersión podría estar influenciada por la presencia de datos atípicos o por una distribución muy dispersa de los datos. que se puede dar producto de la existencia de datos atipicos. Sin embargo, al observar la desviación estándar de 29.29316, que es relativamente baja en comparación con la escala de los datos originales, sugiere que la mayoría de los datos no están muy alejados de la media. Esto puede indicar que la dispersión es más concentrada alrededor de la media, a pesar de la alta varianza. 
+
+Con un coeficiente de variación (CV) de 628.4924 indica una alta variabilidad relativa en comparación con la media, reflejando una variabilidad en el npúmero de hembras entres las diferentes unidades productivas.  Por otro lado Con un IQR de 3, se indica que la dispersión de los datos dentro del rango intercuartílico es relativamente baja.
+
+## Resumen de los cinco números 
+
+```{r, echo=FALSE}
+ 
+resumen_cinco<- readRDS("resumen_cinco.rds")
+knitr::kable(resumen_cinco, 
+             row.name= FALSE)
+```
+Se cumple que: 
+
+$Q_2–Xmin<Xmax–Q_2$
+
+$Q_2–Q_1 < Q_3–Q_2$
+
+$Q1–Xmin < Xmax–Q3$
+
+*La distibución de los datos de la número de hembras en las unidades productivas agropecurias es Unimodal con sesgo a Derecha (Asimetría positiva)*
+
+
+
+# Cantidad total de leche recolectada: (P_S7P85B)
+
+La variable "cantidad total de leche recolectada" representa la cantidad de leche recolectada en las Unidades Productivas Agropecuarias (UPA) en diferentes intervalos de valores. Esta variable es fundamental en el contexto de la producción agropecuaria, específicamente en la producción lactea del departamento de Cundinamarca. 
+
+Se presenta una distribución de frecuencias para diferentes intervalos de leche recolectada, proporcionado una visión detallada de cómo se distribuye la cantidad de leche recolectada en diferentes intervalos.
+
+
+```{r, echo=FALSE}
+tdf_leche<- readRDS("tdf_leche.rds")
+knitr::kable(tdf_leche, caption = "Tabla 5 - Distribución cantidad de leche recolectada.",
+             format="pipe")
+```
+
+
+Con la concentración de los datos se observa como la mayoria de los datos se concentran en los primeros intervalos, ya que las frecuencias disminuyen a medida que aumenta el intervalo de leche recolectada.
+
+Histograma Cantidad total de leche recolectada: (P_S7P85B)
+
+```{r, echo=FALSE, message=FALSE}
+# Histograma para la variable producción de leche. 
+
+ggplot(tdf_leche) +
+  aes(x = intervalos, y = ni, fill = intervalos, group = intervalos) +
+  geom_col(width = 0.7, color = "white") +  
+  scale_fill_viridis_d(option = "magma", direction = 1) + 
+  scale_y_continuous(trans = "log10", breaks = c(2, 14, 88, 60000)) + 
+  labs(x = "Cantidad de leche", y = "Frecuencia", 
+       title = "Distribución de producción de leche") +
+  theme_minimal() +  # Estilo minimalista
+  theme(plot.title = element_text(face = "bold", size = 16),  
+        axis.text.x = element_text(angle = 45, hjust = 1),  
+        legend.position = "none")  
+
+```
+
+El histograma representa visualmente la distribución de la cantidad total de leche recolectada dentro de la unidad productiva (UPA). Destacando que alrededor del 99.77% de las UPAs recolectan entre 0 y 1257.68 litros de leche. 
+
+## Tabla de resumen.
+
+Medidas de tendencia central y posición.
+
+```{r, echo=FALSE}
+tb_resumen_leche <- readRDS("tb_resumen_leche.rds")
+knitr::kable(tb_resumen_leche, 
+             row.name= FALSE)
+```
+
+La producción de leche en las UPA muestra una distribución que varía desde valores mínimos hasta valores máximos significativos. El mínimo de 0 litros indica la presencia de UPA que no recolectaron leche, mientras que el máximo de 23896 litros refleja la máxima producción registrada en una UPA.
+
+La mediana ($Q_2 = M_e$) de 12 litros indica que la mitad de las UPA tienen una producción de leche igual o inferior a este valor, lo que sugiere una distribución sesgada hacia la izquierda debido a la presencia de valores más bajos. El promedio o media de 41.28869 litros representa la cantidad promedio de leche recolectada por las UPAs, ssiendo este valor mayor que la media, producto de la existencia de valores atipicos altos. 
+
+El primer cuartil ($Q_1$) de 0 litros indica que aproximadamente el 25% de las UPA tienen una producción de leche igual o inferior a este valor. El tercer cuartil ($Q_2$) de 25 litros indica que aproximadamente el 75% de las UPA tienen una producción de leche igual o inferior a este valor.
+
+Estas medidas nos permiten concluir que existe una concentración significativa de UPAs que tienen produccción de leche relativamente bajas y la diferncia entre la mediana y la media sugiere la presencia de valores atipicos, situación que se puede visualizar en el diagrama *Boxplot*
+
+
+```{r, echo=FALSE}
+#Boxplot 
+boxplot(datos$P_S7P85B)
+bp <- boxplot(datos$P_S7P85B)  
+
+```
+
+
+Medidas de dispersición y variabilidad leche.
+
+```{r, echo=FALSE}
+tb_resumen2_leche <- readRDS("tb_resumen2_leche.rds")
+knitr::kable(tb_resumen2_leche, 
+             row.name= FALSE)
+```
+
+La varianza de 95462.45 indica una dispersión considerable de la cantidad de leche recolectada en las unidades productivas con respecto al promedio. Es decir, los datos están bastante dispersos alrededor del valor promedio de la cantidad total de leche recolectada. Lo que se afirma con desvaición estandar que indica que la cantidad de leche recolectada tiende a desviarse alrededor de 308.97 unidades de la cantidad promedio de leche recolectada en las unidades productivas.
+
+La dispersión relativa de los datos en comparación con la media (CV) es de 748.32. Siendo un coeficiente de variación alto lo que indica una alta variablidad en la cantidad de leche recolectada que varia en un rango intercuartilico (IQR) de 25 unidades, indicando que el 50% de las UPAs tienen cantida de leche recolectada que varia en 25 unidades.  
+
+## Resumen de los cinco números
+
+$Q_2–Xmin<Xmax–Q_2$ \par
+$Q_2–Q_1 < Q_3–Q_2$ \par
+$Q1–Xmin < Xmax–Q3$ \par
+
+*La distibución de los datos de la cantidad total de leche recolectada en las unidades productivas agropecurias es Unimodal con sesgo a Derecha (Asimetría positiva)*
+
+
+# Mapa total leche recolectada. 
+
+Se puede visualizar un mapa interactivo que muestra la producción de leche direntes municipios de cundinamarca, donde los colores representan diferentes niveles de producción, al hacer clic en un polígono se muestra información detallada sobre el municipio y su producción de leche. 
+
+```{r, include=FALSE}
+salida<- readRDS("salida.rds")
+poligonos_mpios_cun <- readRDS("poligonos_mpios_cun.rds")
+```
+
+```{r, echo=FALSE}
+
+### MAPA
+
+
+pal_fun = colorBin(palette="viridis", domain=poligonos_mpios_cun$total_leche, na.color="transparent")
+p_popup <- paste0("MUNICIPIO: ", poligonos_mpios_cun$MPIO_CNMBR, "; ","PRODUCCIÓN: ", format(poligonos_mpios_cun$total_leche))
+map <- leaflet(options = leafletOptions(zoomControl = FALSE, attributionControl=FALSE, minZoom = 8, maxZoom = 16))
+map %>%
+  addProviderTiles(provider = "CartoDB.Positron",
+                   options = providerTileOptions(opacity = 1)) %>%
+  addPolygons(data=poligonos_mpios_cun, stroke = TRUE, fillColor = ~pal_fun(total_leche), fillOpacity = 0.8, smoothFactor = 0.5,
+              popup = p_popup, color = "#FFA500", weight = 1) %>% 
+  addLegend("bottomleft", pal=pal_fun, values=poligonos_mpios_cun$total_leche, title = 'Total Leche')
+```
+
+
+# Indice de Gini 
+
+El Índice de Gini es una medida estadística que se utiliza comúnmente para medir la desigualdad de ingresos o riqueza dentro de una población. Originalmente desarrollado por el estadístico italiano Corrado Gini, el índice varía entre 0 y 1. 
+
+Acontinuación se presenta  un mapa interactivo que muestra el índice Gini de diferentes municipios, donde los colores de los polígonos representan niveles de desigualdad económica según el índice Gini. Al hacer clic en un polígono, se muestra información detallada sobre el municipio y su índice Gini.
+
+
+```{r, echo=FALSE}
+pal_fun = colorBin(palette="viridis", domain=poligonos_mpios_cun$indice, na.color="transparent")
+p_popup <- paste0("MUNICIPIO: ", poligonos_mpios_cun$MPIO_CNMBR, "; ","INDICE: ", poligonos_mpios_cun$indice)
+map <- leaflet(options = leafletOptions(zoomControl = FALSE, attributionControl=FALSE, minZoom = 8, maxZoom = 16))
+map %>%
+  addProviderTiles(provider = "CartoDB.Positron",
+                   options = providerTileOptions(opacity = 1)) %>%
+  addPolygons(data=poligonos_mpios_cun, stroke = TRUE, fillColor = ~pal_fun(indice), fillOpacity = 0.8, smoothFactor = 0.5,
+              popup = p_popup, color = "#FFA500", weight = 1) %>% 
+  addLegend("bottomleft", pal=pal_fun, values=poligonos_mpios_cun$indice, title = 'Indice Gini')
+```
